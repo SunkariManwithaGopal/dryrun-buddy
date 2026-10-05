@@ -1,4 +1,4 @@
-# 🦆 DryRunBuddy v2.5 Studio
+# 🧠  DryRunBuddy v2.5 Studio
 
 DryRunBuddy is a zero-spoiler, open-source Data Structures & Algorithms (DSA) Socratic Coach. Powered by local, open-weight AI models (Gemma 2 via Ollama), it helps developers build real problem-solving intuition instead of just giving away the solution.
 
