@@ -49,6 +49,9 @@
               <option value="intervals">6. [Greedy / Sorting] Merge Overlapping Intervals</option>
               <option value="courses">7. [Topological Sort / DFS] Course Schedule (Cycle Detection)</option>
               <option value="knapsack">8. [Dynamic Programming] 0/1 Knapsack Maximum Value</option>
+              
+              <option value="twosum">10. [Hashing] Two Sum</option>
+              <option value="validparens">11. [Stack] Valid Parentheses</option>
               <option value="custom">9. [Custom] Paste Your Own Problem</option>
             </select>
           </div>
@@ -370,6 +373,63 @@
           }
         }
       }
+      , twosum: {
+        title: "Two Sum",
+        problem: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
+        approach: "I will use two nested loops to check every possible pair in the array to see if they add up to the target.",
+        code: {
+          Java: "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        for (int i=0; i<nums.length; i++) {\n            for (int j=0; j<nums.length; j++) { // BUG: Should start from i+1\n                if (nums[i] + nums[j] == target) {\n                    return new int[]{i, j};\n                }\n            }\n        }\n        return new int[]{};\n    }\n}",
+          "C++": "class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        for(int i=0; i<nums.size(); i++){\n            for(int j=0; j<nums.size(); j++){ // BUG: Should start from i+1\n                if(nums[i] + nums[j] == target) return {i, j};\n            }\n        }\n        return {};\n    }\n};",
+          Python: "class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        for i in range(len(nums)):\n            for j in range(len(nums)): # BUG: Should start from i+1\n                if nums[i] + nums[j] == target:\n                    return [i, j]\n        return []"
+        },
+        fallback: {
+          socratic: {
+            complexity: "Time: O(N^2), Space: O(1)",
+            counter_example: "What if the array is [3, 2, 4] and target is 6? Your code checks index 0 and 0, adding 3+3=6, and returns [0,0] which is invalid since you can't use the same element twice.",
+            nudge: "How can you look up if the complement (target - nums[i]) exists in O(1) time?",
+            interviewer_question: "Can we trade some space to improve the time complexity to O(N)?"
+          },
+          debug: {
+            bug_summary: "The inner loop starts at 0 instead of i+1, allowing the reuse of the same element.",
+            exact_bugs: "1. Inner loop uses `j=0`, which means it will check the same index twice (e.g., `nums[0] + nums[0]`).\n2. Fix by starting the inner loop at `j = i + 1`.",
+            fixed_snippet: "for (int i=0; i<nums.length; i++) {\n    for (int j=i+1; j<nums.length; j++) {\n        if (nums[i] + nums[j] == target) return new int[]{i, j};\n    }\n}"
+          },
+          solution: {
+            explanation: "Optimal approach uses a HashMap to store the numbers we've seen so far and their indices. For each number, check if target-number exists in the map.",
+            optimal_code: "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        Map<Integer, Integer> map = new HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            int complement = target - nums[i];\n            if (map.containsKey(complement)) {\n                return new int[] { map.get(complement), i };\n            }\n            map.put(nums[i], i);\n        }\n        return new int[]{};\n    }\n}",
+            dry_run_trace: "nums = [2, 7, 11, 15], target = 9\n• i=0, num=2, comp=7. Map empty. map.put(2, 0)\n• i=1, num=7, comp=2. map contains 2! Return [map.get(2), 1] -> [0, 1]"
+          }
+        }
+      },
+      validparens: {
+        title: "Valid Parentheses",
+        problem: "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.",
+        approach: "I'll count the number of open and close brackets. If they are equal, it's valid.",
+        code: {
+          Java: "class Solution {\n    public boolean isValid(String s) {\n        int open = 0;\n        for(char c : s.toCharArray()) {\n            if(c == '(' || c == '{' || c == '[') open++;\n            else open--;\n        }\n        return open == 0;\n    }\n}",
+          "C++": "class Solution {\npublic:\n    bool isValid(string s) {\n        int open = 0;\n        for(char c : s) {\n            if(c == '(' || c == '{' || c == '[') open++;\n            else open--;\n        }\n        return open == 0;\n    }\n};",
+          Python: "class Solution:\n    def isValid(self, s: str) -> bool:\n        open_cnt = 0\n        for c in s:\n            if c in '({[': open_cnt += 1\n            else: open_cnt -= 1\n        return open_cnt == 0"
+        },
+        fallback: {
+          socratic: {
+            complexity: "Time: O(N), Space: O(1)",
+            counter_example: "What if the string is `([)]`? Your code counts 2 open and 2 close, returning true, but the brackets are improperly nested.",
+            nudge: "Is counting enough? Don't we need to remember the EXACT order of the unclosed brackets? What LIFO data structure helps with nested pairs?",
+            interviewer_question: "How would you ensure that a closing bracket specifically matches the MOST RECENT unmatched opening bracket?"
+          },
+          debug: {
+            bug_summary: "Counting brackets fails to validate the order and matching of different bracket types.",
+            exact_bugs: "1. The counter approach only works if there is exactly ONE type of bracket (e.g. `()` ).\n2. It ignores nesting order (`([)]` is invalid but has balanced counts).",
+            fixed_snippet: "// Must use a Stack to track the exact sequence of open brackets."
+          },
+          solution: {
+            explanation: "Use a Stack. Push opening brackets. When encountering a closing bracket, pop the stack and check if it matches the corresponding opening bracket type.",
+            optimal_code: "class Solution {\n    public boolean isValid(String s) {\n        Stack<Character> stack = new Stack<>();\n        for (char c : s.toCharArray()) {\n            if (c == '(') stack.push(')');\n            else if (c == '{') stack.push('}');\n            else if (c == '[') stack.push(']');\n            else if (stack.isEmpty() || stack.pop() != c) return false;\n        }\n        return stack.isEmpty();\n    }\n}",
+            dry_run_trace: "s = '([)]'\n• c='(': push ')' -> stack=[')']\n• c='[': push ']' -> stack=[')', ']']\n• c=')': pop returns ']' != ')'. Return false!"
+          }
+        }
+      }
+
       , custom: {
         title: "Custom Problem",
         problem: "Paste your custom LeetCode problem statement here...",
