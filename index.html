@@ -221,6 +221,7 @@
             explanation: "Multi-Source BFS: Seed the queue with all initial `2`s at `t = 0`, count `fresh` oranges, and expand level-by-level. Time: O(R*C), Space: O(R*C).",
             optimal_code: `import java.util.*;\nclass Solution {\n    public int orangesRotting(int[][] grid) {\n        int R = grid.length, C = grid[0].length, fresh = 0, min = 0;\n        Queue<int[]> q = new LinkedList<>();\n        for (int r = 0; r < R; r++)\n            for (int c = 0; c < C; c++)\n                if (grid[r][c] == 2) q.offer(new int[]{r, c});\n                else if (grid[r][c] == 1) fresh++;\n        int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};\n        while (!q.isEmpty() && fresh > 0) {\n            for (int sz = q.size(); sz > 0; sz--) {\n                int[] cur = q.poll();\n                for (int[] d : dirs) {\n                    int nr = cur[0]+d[0], nc = cur[1]+d[1];\n                    if (nr>=0 && nr<R && nc>=0 && nc<C && grid[nr][nc] == 1) {\n                        grid[nr][nc] = 2;\n                        fresh--;\n                        q.offer(new int[]{nr, nc});\n                    }\n                }\n            }\n            min++;\n        }\n        return fresh == 0 ? min : -1;\n    }\n}`,
             dry_run_trace: "grid = [[2,1,1],[1,1,0],[0,1,1]]\n• t=0: q=[(0,0)], fresh=6\n• t=1: infects (0,1),(1,0) -> fresh=4\n• t=2: infects (0,2),(1,1) -> fresh=2\n• t=3: infects (2,1) -> fresh=1\n• t=4: infects (2,2) -> fresh=0 -> Return 4."
+          }
         }
       },
       threesum: {
