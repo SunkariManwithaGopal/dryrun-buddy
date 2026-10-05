@@ -49,6 +49,7 @@
               <option value="intervals">6. [Greedy / Sorting] Merge Overlapping Intervals</option>
               <option value="courses">7. [Topological Sort / DFS] Course Schedule (Cycle Detection)</option>
               <option value="knapsack">8. [Dynamic Programming] 0/1 Knapsack Maximum Value</option>
+              <option value="custom">9. [Custom] Paste Your Own Problem</option>
             </select>
           </div>
           <div>
@@ -109,6 +110,11 @@
             </div>
           </div>
 
+          
+          <div id="revisionBlock" class="bg-indigo-900/40 border border-indigo-700/50 rounded-lg p-3 mb-3 text-[11px] text-indigo-200">
+            <span class="font-bold uppercase tracking-wider text-indigo-400 block mb-1">📚 Quick Revision Notes</span>
+            <span id="dsNotesText"></span>
+          </div>
           <div id="outputBox" class="space-y-3.5 text-xs text-slate-300 max-h-[560px] overflow-y-auto pr-1"></div>
         </div>
 
@@ -364,6 +370,35 @@
           }
         }
       }
+      , custom: {
+        title: "Custom Problem",
+        problem: "Paste your custom LeetCode problem statement here...",
+        approach: "Write your initial intuition here...",
+        code: {
+          Java: "class Solution {\n    \n}",
+          "C++": "class Solution {\npublic:\n    \n};",
+          Python: "class Solution:\n    def solve(self):\n        pass"
+        },
+        fallback: {
+          socratic: {
+            complexity: "N/A - Please connect to Ollama to solve custom problems.",
+            counter_example: "N/A",
+            nudge: "N/A",
+            interviewer_question: "N/A"
+          },
+          debug: {
+            bug_summary: "N/A",
+            exact_bugs: "N/A",
+            fixed_snippet: ""
+          },
+          solution: {
+            explanation: "N/A",
+            optimal_code: "",
+            dry_run_trace: "N/A"
+          }
+        }
+      }
+
     };
 
     function loadPreset() {
