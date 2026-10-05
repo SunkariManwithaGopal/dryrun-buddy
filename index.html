@@ -461,12 +461,32 @@
 
     };
 
-    function loadPreset() {
+        function loadPreset() {
       const key = document.getElementById("problemPreset").value;
       const lang = document.getElementById("langSelect").value;
       document.getElementById("problemText").value = presets[key].problem;
       document.getElementById("userApproach").value = presets[key].approach;
       document.getElementById("userCode").value = presets[key].code[lang];
+      
+      const notesMap = {
+        koko: 'Binary Search on Answer: The search space is the eating speed (1 to max pile). Monotonic condition: If you can eat all bananas at speed K, you can also eat them at speed K+1.',
+        subarray: 'Hashing / Prefix Sum: Keep a running sum of elements. Store (running_sum, index) in a HashMap. If (running_sum - K) exists in map, a valid subarray was found.',
+        rotten: 'Graphs / Multi-source BFS: Use a Queue. Enqueue ALL initially rotten oranges at t=0. Level-order traversal ensures shortest time to reach fresh oranges.',
+        threesum: 'Two Pointers: Sort array first to handle duplicates easily. Fix one number, use left and right pointers for the remaining sum. Skip duplicates at every step.',
+        rainwater: 'Two Pointers / Stack: Water trapped at i depends on min(left_max, right_max) - height[i]. Two pointers update left_max and right_max efficiently from ends.',
+        intervals: 'Greedy / Sorting: Sort intervals by start time. Iterate and maintain current interval. If next interval overlaps, merge by taking max of end times.',
+        courses: 'Topological Sort / DFS: Model as a directed graph. Detect cycles using DFS (visit states: 0=unvisited, 1=visiting, 2=visited) or Kahn\'s Algorithm (Indegrees).',
+        knapsack: 'Dynamic Programming: 0/1 Choice: Include or Exclude. State: dp[w] = max value at capacity w. Iterate capacity backwards to avoid reusing the same item.',
+        twosum: 'Hashing: Use a HashMap to store values as keys and indices as values. Provides O(1) average time complexity for complement lookups.',
+        validparens: 'Stack (LIFO): Perfect for parsing nested structures. Push expected closing symbols when opening symbols are found. Pop and match when closing symbols are found.',
+        custom: 'Custom Problem: Identify constraints to pick DS. Array/String -> Pointers/Hash. Tree/Graph -> DFS/BFS. Optimization -> DP/Greedy. Sorted -> Binary Search.'
+      };
+      
+      const dsNotesText = document.getElementById("dsNotesText");
+      if (dsNotesText) {
+          dsNotesText.textContent = notesMap[key];
+      }
+
       runStage(currentStage);
     }
 
