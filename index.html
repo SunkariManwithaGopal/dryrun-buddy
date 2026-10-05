@@ -490,6 +490,14 @@
       if (revisionBlock) {
           revisionBlock.classList.add("hidden");
       }
+      
+      const rightPanel = document.getElementById("rightPanel");
+      const leftPanel = document.getElementById("leftPanel");
+      if (rightPanel && leftPanel) {
+          rightPanel.classList.add("hidden");
+          leftPanel.classList.remove("lg:col-span-7");
+          leftPanel.classList.add("lg:col-span-12");
+      }
 
       runStage(currentStage);
     }
@@ -568,6 +576,14 @@
     }
 
     function renderStage(stage, data, source) {
+      const rightPanel = document.getElementById("rightPanel");
+      const leftPanel = document.getElementById("leftPanel");
+      if (rightPanel && leftPanel) {
+          rightPanel.classList.remove("hidden");
+          leftPanel.classList.remove("lg:col-span-12");
+          leftPanel.classList.add("lg:col-span-7");
+      }
+      
       const rb = document.getElementById("revisionBlock");
       if (rb) rb.classList.remove("hidden");
       lastRenderedData = data;
