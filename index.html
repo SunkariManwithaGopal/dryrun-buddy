@@ -114,7 +114,7 @@
           </div>
 
           
-          <div id="revisionBlock" class="bg-indigo-900/40 border border-indigo-700/50 rounded-lg p-3 mb-3 text-[11px] text-indigo-200">
+          <div id="revisionBlock" class="hidden bg-indigo-900/40 border border-indigo-700/50 rounded-lg p-3 mb-3 text-[11px] text-indigo-200">
             <span class="font-bold uppercase tracking-wider text-indigo-400 block mb-1">📚 Quick Revision Notes</span>
             <span id="dsNotesText"></span>
           </div>
@@ -486,6 +486,9 @@
       if (dsNotesText) {
           dsNotesText.textContent = notesMap[key];
       }
+      if (revisionBlock) {
+          revisionBlock.classList.add("hidden");
+      }
 
       runStage(currentStage);
     }
@@ -564,6 +567,8 @@
     }
 
     function renderStage(stage, data, source) {
+      const rb = document.getElementById("revisionBlock");
+      if (rb) rb.classList.remove("hidden");
       lastRenderedData = data;
       document.getElementById("statusBadge").textContent = `Engine: ${source}`;
       const out = document.getElementById("outputBox");
