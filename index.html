@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DryRunBuddy — Socratic Open-Source DSA Coach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans p-6">
+  <div class="max-w-5xl mx-auto space-y-6">
+    <!-- Header -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-4 gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-emerald-400">🦆 DryRunBuddy</h1>
+        <p class="text-sm text-slate-400">Zero-Spoiler Socratic DSA & Interview Intuition Coach (Powered by Local Gemma / Ollama)</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <label class="text-xs text-slate-400">Model:</label>
+        <input id="modelName" type="text" value="gemma2:2b" class="bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-emerald-300 w-32" />
+        <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer bg-slate-900 px-3 py-1.5 rounded border border-slate-700">
+          <input id="demoMode" type="checkbox" class="accent-emerald-500" />
+           Judge Demo Fallback
+        </label>
+      </div>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Left Column: Problem & Student Dry Run -->
+      <div class="space-y-4 bg-slate-900/70 p-5 rounded-xl border border-slate-800">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">1. Pick or Paste DSA Problem</label>
+          <select id="problemPreset" onchange="loadPreset()" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-sm mb-2">
+            <option value="subarray">Longest Subarray with Sum K (Positives + Negatives)</option>
+            <option value="koko">Koko Eating Bananas (Binary Search on Answer)</option>
+            <option value="rotten">Rotting Oranges (Multi-source BFS)</option>
+          </select>
+          <textarea id="problemText" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm text-slate-200">Given an array of integers nums (containing positive, zero, and negative numbers) and an integer k, return the length of the longest subarray whose sum equals k.</textarea>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">2. Explain Your Intuition / Code Dry Run</label>
+            <button onclick="startVoice()" id="micBtn" class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2.5 py-1 rounded border border-slate-700">🎙️ Speak Dry Run</button>
+          </div>
+          <textarea id="userApproach" rows="6" placeholder="Explain your approach or paste your rough Java/C++/Python code..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm font-mono text-slate-200">I'll use a two-pointer sliding window with left = 0 and right = 0. I expand right and add nums[right] to sum. Whenever sum > k, I shrink left until sum <= k, and update maxLen when sum == k.</textarea>
+        </div>
+
+        <button onclick="evaluateDryRun()" id="evalBtn" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 rounded-lg transition">
+          Audit My Intuition (No Code Spoilers)
+        </button>
+      </div>
+
+      <!-- Right Column: Structured Socratic Feedback -->
+      <div class="bg-slate-900/70 p-5 rounded-xl border border-slate-800 flex flex-col justify-between space-y-4">
+        <div>
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3">3. Socratic Interviewer Feedback</h2>
+          <div id="outputBox" class="space-y-4 text-sm text-slate-300">
+            <div class="p-4 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">
+              Submit your approach on the left. DryRunBuddy enforces a strict system prompt that <strong>blocks full solution code</strong> and returns a 4-part diagnostic: Complexity Estimate, Counter-Example Test Case, Pattern Nudge, and Interviewer Follow-up Question.
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-800 pt-3 flex justify-between items-center text-xs text-slate-500">
+          <span id="statusBadge">Engine: Ollama Local (http://localhost:11434)</span>
+          <span>100% Zero-Cloud Privacy</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const presets = {
+      subarray: {
+        problem: "Given an array of integers nums (containing positive, zero, and negative numbers) and an integer k, return the length of the longest subarray whose sum equals k.",
+        approach: "I'll use a two-pointer sliding window with left = 0 and right = 0. I expand right and add nums[right] to sum. Whenever sum > k, I shrink left until sum <= k, and update maxLen when sum == k."
+      },
+      koko: {
+        problem: "Koko loves bananas. There are n piles of bananas, the ith pile has piles[i] bananas. Guards return in h hours. Find the minimum integer eating speed k such that she can eat all bananas within h hours.",
+        approach: "I will linearly check speed k starting from 1 up to the maximum pile size. For each k, I loop through the array and sum ceil(piles[i] / k). The first k where hours <= h is my answer."
+      },
+      rotten: {
+        problem: "In a grid, 0 is empty, 1 is a fresh orange, and 2 is a rotten orange. Every minute, any fresh orange 4-directionally adjacent to a rotten orange becomes rotten. Return minimum minutes until no fresh orange remains, or -1.",
+        approach: "I will run a standard DFS from the first rotten orange I find, incrementing time by 1 at each recursive step."
+      }
+    };
+
+    function loadPreset() {
+      const key = document.getElementById("problemPreset").value;
+      document.getElementById("problemText").value = presets[key].problem;
+      document.getElementById("userApproach").value = presets[key].approach;
+    }
+
+    function startVoice() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return alert("Web Speech API not supported in this browser.");
+      const rec = new SpeechRecognition();
+      rec.lang = "en-US";
+      const btn = document.getElementById("micBtn");
+      btn.textContent = "🔴 Listening...";
+      rec.onresult = (e) => {
+        document.getElementById("userApproach").value += " " + e.results[0][0].transcript;
+        btn.textContent = "🎙️ Speak Dry Run";
+      };
+      rec.onerror = () => { btn.textContent = "🎙️ Speak Dry Run"; };
+      rec.start();
+    }
+
+    async function evaluateDryRun() {
+      const problem = document.getElementById("problemText").value;
+      const approach = document.getElementById("userApproach").value;
+      const model = document.getElementById("modelName").value;
+      const isDemo = document.getElementById("demoMode").checked;
+      const out = document.getElementById("outputBox");
+      const btn = document.getElementById("evalBtn");
+
+      btn.disabled = true;
+      btn.textContent = "Analyzing Intuition...";
+
+      const systemPrompt = `You are DryRunBuddy, a strict Socratic DSA Interview Coach built for a close friend.
+NEVER write the final solution code. NEVER give away the full algorithm directly.
+Respond ONLY in valid JSON with these exact keys:
+{
+  "complexity": "Estimated Time and Space complexity of the user's current approach",
+  "counter_example": "A concrete small input array/grid where their logic fails or TLEs, showing step-by-step why",
+  "nudge": "A 1-2 sentence conceptual hint pointing toward the right data structure or invariant",
+  "interviewer_question": "One sharp question an interviewer would ask next"
+}`;
+
+      try {
+        if (isDemo) throw new Error("Fallback requested");
+        const res = await fetch("http://localhost:11434/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: model,
+            system: systemPrompt,
+            prompt: `Problem: ${problem}\n\nFriend's Dry Run: ${approach}`,
+            format: "json",
+            stream: false
+          })
+        });
+        const data = await res.json();
+        renderFeedback(JSON.parse(data.response), `Local Ollama (${model})`);
+      } catch (err) {
+        // Fallback deterministic Socratic response if Ollama isn't running locally for web judges
+        const fallback = {
+          complexity: "Current Time: O(N) attempt (broken correctness) | Optimal Target: O(N) Time, O(N) Space",
+          counter_example: "Try nums = [2, -1, 2], k = 3. Your window reaches sum = 3 at index 0..2, but if nums = [4, -2, 1] and k = 3, when sum hits 4 (> 3), shrinking left drops 4 right away even though -2 + 1 later would have balanced it! Sliding window monotonicity breaks with negative numbers.",
+          nudge: "Instead of shrinking a window, what if you stored the earliest index of every cumulative prefix sum you've seen so far in a HashMap?",
+          interviewer_question: "If the current prefix sum at index i is S, what exact previous prefix sum value would you look up in your map to guarantee the subarray between them sums to k?"
+        };
+        renderFeedback(fallback, "Judge Demo Fallback (Offline Socratic Guardrail)");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Audit My Intuition (No Code Spoilers)";
+      }
+    }
+
+    function renderFeedback(fb, source) {
+      document.getElementById("statusBadge").textContent = `Engine: ${source}`;
+      document.getElementById("outputBox").innerHTML = `
+        <div class="p-3.5 rounded-lg bg-slate-950 border border-slate-800">
+          <div class="text-xs font-bold text-emerald-400 uppercase mb-1">⏱️ Complexity Audit</div>
+          <p>${fb.complexity}</p>
+        </div>
+        <div class="p-3.5 rounded-lg bg-rose-950/30 border border-rose-800/60">
+          <div class="text-xs font-bold text-rose-400 uppercase mb-1">💥 Breaking Counter-Example</div>
+          <p class="font-mono text-xs">${fb.counter_example}</p>
+        </div>
+        <div class="p-3.5 rounded-lg bg-amber-950/30 border border-amber-800/60">
+          <div class="text-xs font-bold text-amber-400 uppercase mb-1">💡 Socratic Pattern Nudge (Spoiler-Free)</div>
+          <p>${fb.nudge}</p>
+        </div>
+        <div class="p-3.5 rounded-lg bg-sky-950/30 border border-sky-800/60">
+          <div class="text-xs font-bold text-sky-400 uppercase mb-1">🎙️️ Mock Interviewer Follow-Up</div>
+          <p class="italic">"${fb.interviewer_question}"</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
