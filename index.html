@@ -3,93 +3,375 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DryRunBuddy — Socratic Open-Source DSA Coach</title>
+  <title>DryRunBuddy v2.5 — Open-Source Socratic DSA Studio</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans p-6">
-  <div class="max-w-5xl mx-auto space-y-6">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans p-4 md:p-6">
+  <div class="max-w-7xl mx-auto space-y-5">
     <!-- Header -->
     <header class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-4 gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-emerald-400">🦆 DryRunBuddy</h1>
-        <p class="text-sm text-slate-400">Zero-Spoiler Socratic DSA & Interview Intuition Coach (Powered by Local Gemma / Ollama)</p>
+        <div class="flex items-center gap-2.5">
+          <h1 class="text-2xl font-bold text-emerald-400">🦆 DryRunBuddy <span class="text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2.5 py-0.5 rounded-full font-mono">v2.5 Studio</span></h1>
+        </div>
+        <p class="text-xs md:text-sm text-slate-400 mt-0.5">8-Problem Striver/LeetCode Studio • Live Code Debugger • Markdown Revision Exporter (Powered by Local Gemma / Ollama)</p>
       </div>
-      <div class="flex items-center gap-3">
-        <label class="text-xs text-slate-400">Model:</label>
-        <input id="modelName" type="text" value="gemma2:2b" class="bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-emerald-300 w-32" />
-        <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer bg-slate-900 px-3 py-1.5 rounded border border-slate-700">
+      <div class="flex flex-wrap items-center gap-2.5">
+        <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <label class="text-xs text-slate-400">Ollama Model:</label>
+          <input id="modelName" type="text" value="gemma2:2b" class="bg-transparent text-xs text-emerald-300 w-24 focus:outline-none font-mono" />
+        </div>
+        <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-600">
           <input id="demoMode" type="checkbox" class="accent-emerald-500" />
-           Judge Demo Fallback
+          Instant Offline Engine
         </label>
+        <button onclick="exportMarkdown()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-3 py-1.5 rounded-lg transition shadow">
+          📄 Export Notes (.md)
+        </button>
       </div>
     </header>
 
-    <!-- Main Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Left Column: Problem & Student Dry Run -->
-      <div class="space-y-4 bg-slate-900/70 p-5 rounded-xl border border-slate-800">
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">1. Pick or Paste DSA Problem</label>
-          <select id="problemPreset" onchange="loadPreset()" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-sm mb-2">
-            <option value="subarray">Longest Subarray with Sum K (Positives + Negatives)</option>
-            <option value="koko">Koko Eating Bananas (Binary Search on Answer)</option>
-            <option value="rotten">Rotting Oranges (Multi-source BFS)</option>
-          </select>
-          <textarea id="problemText" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm text-slate-200">Given an array of integers nums (containing positive, zero, and negative numbers) and an integer k, return the length of the longest subarray whose sum equals k.</textarea>
+    <!-- Main Studio Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Left Column (7 cols): Problem + Intuition + Code Editor -->
+      <div class="lg:col-span-7 space-y-4 bg-slate-900/70 p-5 rounded-xl border border-slate-800">
+        <!-- Problem & Language Selector -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div class="md:col-span-3">
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">1. Choose DSA Problem (8 Topics) or Paste Custom</label>
+            <select id="problemPreset" onchange="loadPreset()" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-sm text-slate-100">
+              <option value="koko">1. [Binary Search] Koko Eating Bananas</option>
+              <option value="subarray">2. [Hashing / Prefix Sum] Longest Subarray with Sum K (Pos + Neg)</option>
+              <option value="rotten">3. [Graphs / Multi-BFS] Rotting Oranges</option>
+              <option value="threesum">4. [Two Pointers] 3Sum (Unique Triplets Summing to Zero)</option>
+              <option value="rainwater">5. [Two Pointers / Stack] Trapping Rain Water</option>
+              <option value="intervals">6. [Greedy / Sorting] Merge Overlapping Intervals</option>
+              <option value="courses">7. [Topological Sort / DFS] Course Schedule (Cycle Detection)</option>
+              <option value="knapsack">8. [Dynamic Programming] 0/1 Knapsack Maximum Value</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Language</label>
+            <select id="langSelect" onchange="loadPreset()" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-sm text-emerald-300 font-mono">
+              <option value="Java">Java</option>
+              <option value="C++">C++</option>
+              <option value="Python">Python</option>
+            </select>
+          </div>
         </div>
 
+        <textarea id="problemText" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-300 leading-relaxed"></textarea>
+
+        <!-- Intuition Dry Run Box -->
         <div>
           <div class="flex justify-between items-center mb-1">
-            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">2. Explain Your Intuition / Code Dry Run</label>
-            <button onclick="startVoice()" id="micBtn" class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2.5 py-1 rounded border border-slate-700">🎙️ Speak Dry Run</button>
+            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">2. Verbal / Written Dry-Run Intuition</label>
+            <button onclick="startVoice()" id="micBtn" class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2.5 py-1 rounded border border-slate-700 transition">🎙️ Speak Dry Run</button>
           </div>
-          <textarea id="userApproach" rows="6" placeholder="Explain your approach or paste your rough Java/C++/Python code..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm font-mono text-slate-200">I'll use a two-pointer sliding window with left = 0 and right = 0. I expand right and add nums[right] to sum. Whenever sum > k, I shrink left until sum <= k, and update maxLen when sum == k.</textarea>
+          <textarea id="userApproach" rows="2" placeholder="Explain your intuition out loud or type your thought process..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200"></textarea>
         </div>
 
-        <button onclick="evaluateDryRun()" id="evalBtn" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 rounded-lg transition">
-          Audit My Intuition (No Code Spoilers)
-        </button>
+        <!-- Code Editor Box -->
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-xs font-semibold uppercase tracking-wider text-emerald-400">3. Live Code Sandbox (Edit Code to Test Bug Auditor)</label>
+            <span id="problemTag" class="text-[11px] text-amber-400 font-mono">Contains intentional interview bugs to debug!</span>
+          </div>
+          <textarea id="userCode" rows="10" spellcheck="false" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3.5 text-xs font-mono text-emerald-200 focus:outline-none leading-relaxed"></textarea>
+        </div>
+
+        <!-- 3-Stage Action Bar -->
+        <div class="pt-1">
+          <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-2">4. Progressive Coaching Mode (Updates Dynamically Per Problem & Code):</div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <button onclick="runStage('socratic')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 px-3 rounded-lg text-xs transition shadow-lg">
+              💡 1. Socratic Audit<br/><span class="font-normal text-[10px] opacity-80">(Zero Code Spoilers)</span>
+            </button>
+            <button onclick="runStage('debug')" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 px-3 rounded-lg text-xs transition shadow-lg">
+              🐛 2. Debug My Code<br/><span class="font-normal text-[10px] opacity-80">(Pinpoint & Fix Bugs)</span>
+            </button>
+            <button onclick="runStage('solution')" class="bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2.5 px-3 rounded-lg text-xs transition shadow-lg">
+              🔓 3. Unlock Optimal<br/><span class="font-normal text-[10px] opacity-80">(Full Code + Trace)</span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      <!-- Right Column: Structured Socratic Feedback -->
-      <div class="bg-slate-900/70 p-5 rounded-xl border border-slate-800 flex flex-col justify-between space-y-4">
+      <!-- Right Column (5 cols): Dynamic Coaching & Markdown Preview -->
+      <div class="lg:col-span-5 bg-slate-900/70 p-5 rounded-xl border border-slate-800 flex flex-col justify-between space-y-4">
         <div>
-          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3">3. Socratic Interviewer Feedback</h2>
-          <div id="outputBox" class="space-y-4 text-sm text-slate-300">
-            <div class="p-4 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">
-              Submit your approach on the left. DryRunBuddy enforces a strict system prompt that <strong>blocks full solution code</strong> and returns a 4-part diagnostic: Complexity Estimate, Counter-Example Test Case, Pattern Nudge, and Interviewer Follow-up Question.
+          <div class="flex justify-between items-center border-b border-slate-800 pb-2.5 mb-3">
+            <h2 id="panelTitle" class="text-xs font-semibold uppercase tracking-wider text-emerald-400">Coach Diagnostic Output</h2>
+            <div class="flex items-center gap-2">
+              <button onclick="toggleMarkdownModal()" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-indigo-300 px-2 py-0.5 rounded border border-slate-700 font-mono">📝 View Markdown</button>
+              <span id="stagePill" class="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">Ready</span>
             </div>
           </div>
+
+          <div id="outputBox" class="space-y-3.5 text-xs text-slate-300 max-h-[560px] overflow-y-auto pr-1"></div>
         </div>
 
-        <div class="border-t border-slate-800 pt-3 flex justify-between items-center text-xs text-slate-500">
-          <span id="statusBadge">Engine: Ollama Local (http://localhost:11434)</span>
-          <span>100% Zero-Cloud Privacy</span>
+        <div class="border-t border-slate-800 pt-3 flex justify-between items-center text-[11px] text-slate-500">
+          <span id="statusBadge">Engine: Ready</span>
+          <span>100% Local Privacy • Markdown Export Ready</span>
         </div>
+      </div>
+    </div>
+
+    <!-- Markdown Preview & Copy Modal -->
+    <div id="mdModal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div class="bg-slate-900 border border-slate-700 rounded-xl max-w-3xl w-full p-5 space-y-3 shadow-2xl">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+          <h3 class="text-sm font-bold text-indigo-400">📝 Generated Markdown Study Note (For Notion / GitHub / Obsidian)</h3>
+          <div class="flex gap-2">
+            <button onclick="copyMarkdown()" id="copyMdBtn" class="text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-3 py-1 rounded">Copy Markdown</button>
+            <button onclick="exportMarkdown()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1 rounded">Download .md</button>
+            <button onclick="toggleMarkdownModal()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded">✕</button>
+          </div>
+        </div>
+        <textarea id="mdPreviewArea" rows="16" readonly class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs font-mono text-slate-200 focus:outline-none"></textarea>
       </div>
     </div>
   </div>
 
   <script>
+    let currentStage = "socratic";
+    let lastRenderedData = {};
+
     const presets = {
-      subarray: {
-        problem: "Given an array of integers nums (containing positive, zero, and negative numbers) and an integer k, return the length of the longest subarray whose sum equals k.",
-        approach: "I'll use a two-pointer sliding window with left = 0 and right = 0. I expand right and add nums[right] to sum. Whenever sum > k, I shrink left until sum <= k, and update maxLen when sum == k."
-      },
       koko: {
+        title: "Koko Eating Bananas",
         problem: "Koko loves bananas. There are n piles of bananas, the ith pile has piles[i] bananas. Guards return in h hours. Find the minimum integer eating speed k such that she can eat all bananas within h hours.",
-        approach: "I will linearly check speed k starting from 1 up to the maximum pile size. For each k, I loop through the array and sum ceil(piles[i] / k). The first k where hours <= h is my answer."
+        approach: "I will binary search eating speed k between 1 and max(piles). For each mid, I sum piles[i] / mid and adjust low and high.",
+        code: {
+          Java: `class Solution {\n    public int minEatingSpeed(int[] piles, int h) {\n        int low = 1, high = 1000000000;\n        while (low < high) {\n            int mid = (low + high) / 2;\n            int hours = 0; // BUG 1: 32-bit int overflow when mid=1\n            for (int p : piles) hours += p / mid; // BUG 2: Floor instead of ceil division!\n            if (hours <= h) low = mid + 1; // BUG 3: Reversed boundary move!\n            else high = mid - 1;\n        }\n        return low;\n    }\n}`,
+          "C++": `class Solution {\npublic:\n    int minEatingSpeed(vector<int>& piles, int h) {\n        int low = 1, high = *max_element(piles.begin(), piles.end());\n        while (low < high) {\n            int mid = (low + high) / 2;\n            int hours = 0; // BUG 1: Overflow\n            for (int p : piles) hours += p / mid; // BUG 2: Floor division\n            if (hours <= h) low = mid + 1; // BUG 3: Wrong half discarded\n            else high = mid - 1;\n        }\n        return low;\n    }\n};`,
+          Python: `class Solution:\n    def minEatingSpeed(self, piles: list[int], h: int) -> int:\n        low, high = 1, max(piles)\n        while low < high:\n            mid = (low + high) // 2\n            hours = sum(p // mid for p in piles) # BUG 1: Floor division!\n            if hours <= h:\n                low = mid + 1 # BUG 2: Moves right instead of shrinking high!\n            else:\n                high = mid - 1\n        return low`
+        },
+        fallback: {
+          socratic: {
+            complexity: "Current Binary Search: O(N log(max(piles))) Time, O(1) Space — but fails correctness due to floor division & boundary direction.",
+            counter_example: "Try piles = [3, 6, 7, 11], h = 8. At mid = 6, pile 7 takes ceil(7/6) = 2 hours, but integer division `7 / 6` gives 1 hour! Also, when `hours <= h`, moving `low = mid + 1` discards smaller valid speeds.",
+            nudge: "In integer arithmetic, how can you compute `ceil(p / mid)` without `Math.ceil`? And if speed `mid` finishes in time (`hours <= h`), could an even slower speed on the left also work?",
+            interviewer_question: "Why can `int hours` overflow in Java/C++ when `piles = [10^9, 10^9, 10^9]` and `mid = 1`, and what type should `hours` be?"
+          },
+          debug: {
+            bug_summary: "Koko Eating Bananas: 3 bugs detected (Floor division instead of Ceiling, inverted Binary Search direction, and 32-bit integer overflow).",
+            exact_bugs: "1. [Line 7] `hours += p / mid` truncates remainders (7/6 = 1 instead of 2). Use `(p + mid - 1) / mid`.\n2. [Line 8] When `hours <= h`, `mid` is a valid speed! To find the MINIMUM speed, search left with `high = mid`, and when `hours > h`, search right with `low = mid + 1`.\n3. [Line 6] `int hours = 0` overflows 32-bit signed integer when `mid = 1` on large arrays. Change to `long hours = 0`.",
+            fixed_snippet: `long hours = 0;\nfor (int p : piles) {\n    hours += (p + mid - 1) / mid; // Exact ceiling division\n}\nif (hours <= h) {\n    high = mid; // Valid speed, try smaller on the left\n} else {\n    low = mid + 1; // Too slow, must eat faster\n}`
+          },
+          solution: {
+            explanation: "Binary Search on Answer over [1, max(piles)]. Time Complexity: O(N log(max(piles))), Space Complexity: O(1).",
+            optimal_code: `class Solution {\n    public int minEatingSpeed(int[] piles, int h) {\n        int low = 1, high = 0;\n        for (int p : piles) high = Math.max(high, p);\n        while (low < high) {\n            int mid = low + (high - low) / 2;\n            long hours = 0;\n            for (int p : piles) hours += (p + mid - 1) / mid;\n            if (hours <= h) high = mid;\n            else low = mid + 1;\n        }\n        return low;\n    }\n}`,
+            dry_run_trace: "piles = [3, 6, 7, 11], h = 8\n• [low=1, high=11] -> mid=6 -> hours = 1+1+2+2 = 6 <= 8 -> high = 6\n• [low=1, high=6]  -> mid=3 -> hours = 1+2+3+4 = 10 > 8 -> low = 4\n• [low=4, high=6]  -> mid=5 -> hours = 1+2+2+3 = 8 <= 8 -> high = 5\n• [low=4, high=5]  -> mid=4 -> hours = 1+2+2+3 = 8 <= 8 -> high = 4\n• Return low = 4."
+          }
+        }
+      },
+      subarray: {
+        title: "Longest Subarray with Sum K (Positives + Negatives)",
+        problem: "Given an array of integers nums (containing positive, zero, and negative numbers) and an integer k, return the length of the longest subarray whose sum equals k.",
+        approach: "I use a two-pointer sliding window (left, right) and shrink left whenever current sum > k.",
+        code: {
+          Java: `class Solution {\n    public int longestSubarray(int[] nums, int k) {\n        int left = 0, sum = 0, maxLen = 0;\n        for (int right = 0; right < nums.length; right++) {\n            sum += nums[right];\n            // BUG: Two-pointer window fails when array has negative numbers!\n            while (sum > k && left <= right) {\n                sum -= nums[left++];\n            }\n            if (sum == k) maxLen = Math.max(maxLen, right - left + 1);\n        }\n        return maxLen;\n    }\n}`,
+          "C++": `class Solution {\npublic:\n    int longestSubarray(vector<int>& nums, int k) {\n        int left = 0, sum = 0, maxLen = 0;\n        for (int right = 0; right < nums.size(); right++) {\n            sum += nums[right];\n            while (sum > k && left <= right) sum -= nums[left++]; // Breaks on negatives!\n            if (sum == k) maxLen = max(maxLen, right - left + 1);\n        }\n        return maxLen;\n    }\n};`,
+          Python: `class Solution:\n    def longestSubarray(self, nums: list[int], k: int) -> int:\n        left = curr_sum = max_len = 0\n        for right, x in enumerate(nums):\n            curr_sum += x\n            while curr_sum > k and left <= right:\n                curr_sum -= nums[left]\n                left += 1\n            if curr_sum == k:\n                max_len = max(max_len, right - left + 1)\n        return max_len`
+        },
+        fallback: {
+          socratic: {
+            complexity: "Sliding Window Attempt: O(N) Time, O(1) Space — Fails correctness on negative integers. Optimal Target: O(N) Time, O(N) Space.",
+            counter_example: "Try nums = [4, -2, 1], k = 3. At right = 0, sum = 4 > 3. Your `while (sum > k)` loop immediately drops `4`, missing the full subarray `[4, -2, 1]` of length 3!",
+            nudge: "Sliding window requires monotonicity (adding elements only increases sum). With negatives, store cumulative prefix sums `P[i]` in a HashMap mapping `prefixSum -> earliestIndex`.",
+            interviewer_question: "If `prefixSum` repeats (due to zeroes or negatives), why must we NOT overwrite the existing index in the HashMap?"
+          },
+          debug: {
+            bug_summary: "Longest Subarray Sum K: Sliding window invariant breaks with negative numbers; must use Prefix Sum + Earliest-Index HashMap.",
+            exact_bugs: "1. [Line 7] `while (sum > k)` assumes future elements cannot reduce `sum`. Negative numbers later in the array can bring `sum` back down to `k`.\n2. Missing Prefix Sum lookup: check if `(prefixSum - k)` exists in a HashMap.\n3. Only store the FIRST occurrence (`putIfAbsent`) so `i - map.get(prefixSum - k)` is maximized.",
+            fixed_snippet: `Map<Long, Integer> firstIdx = new HashMap<>();\nfirstIdx.put(0L, -1);\nlong sum = 0;\nfor (int i = 0; i < nums.length; i++) {\n    sum += nums[i];\n    if (firstIdx.containsKey(sum - k)) {\n        maxLen = Math.max(maxLen, i - firstIdx.get(sum - k));\n    }\n    firstIdx.putIfAbsent(sum, i); // Preserve earliest index!\n}`
+          },
+          solution: {
+            explanation: "Prefix Sum + HashMap. If `sum[0..i] - sum[0..j] == k`, then subarray `(j+1..i]` has sum `k`. Time: O(N), Space: O(N).",
+            optimal_code: `import java.util.*;\nclass Solution {\n    public int longestSubarray(int[] nums, int k) {\n        Map<Long, Integer> map = new HashMap<>();\n        map.put(0L, -1);\n        long sum = 0;\n        int maxLen = 0;\n        for (int i = 0; i < nums.length; i++) {\n            sum += nums[i];\n            if (map.containsKey(sum - k)) {\n                maxLen = Math.max(maxLen, i - map.get(sum - k));\n            }\n            map.putIfAbsent(sum, i);\n        }\n        return maxLen;\n    }\n}`,
+            dry_run_trace: "nums = [4, -2, 1], k = 3 | map = {0: -1}\n• i=0 (4): sum=4, lookup(4-3=1) miss -> map={0:-1, 4:0}\n• i=1 (-2): sum=2, lookup(2-3=-1) miss -> map={0:-1, 4:0, 2:1}\n• i=2 (1): sum=3, lookup(3-3=0) HIT at idx -1 -> len = 2 - (-1) = 3!\n• Return 3."
+          }
+        }
       },
       rotten: {
+        title: "Rotting Oranges (Multi-Source BFS)",
         problem: "In a grid, 0 is empty, 1 is a fresh orange, and 2 is a rotten orange. Every minute, any fresh orange 4-directionally adjacent to a rotten orange becomes rotten. Return minimum minutes until no fresh orange remains, or -1.",
-        approach: "I will run a standard DFS from the first rotten orange I find, incrementing time by 1 at each recursive step."
+        approach: "I scan the grid and run recursive DFS from the first rotten orange I find, adding 1 minute per step.",
+        code: {
+          Java: `class Solution {\n    public int orangesRotting(int[][] grid) {\n        // BUG 1: Single-source DFS instead of simultaneous Multi-Source BFS!\n        for (int r = 0; r < grid.length; r++) {\n            for (int c = 0; c < grid[0].length; c++) {\n                if (grid[r][c] == 2) return dfs(grid, r, c, 0);\n            }\n        }\n        return -1; // BUG 2: What if there are 0 fresh oranges initially?\n    }\n    int dfs(int[][] g, int r, int c, int min) { return min; }\n}`,
+          "C++": `class Solution {\npublic:\n    int orangesRotting(vector<vector<int>>& grid) {\n        // BUG: Starting from only the first rotten orange ignores parallel wave spread\n        return -1;\n    }\n};`,
+          Python: `class Solution:\n    def orangesRotting(self, grid: list[list[int]]) -> int:\n        # BUG: Missing Multi-Source Queue initialization for all initial 2s\n        return -1`
+        },
+        fallback: {
+          socratic: {
+            complexity: "Single-Source DFS: Fails shortest-time wave semantics | Optimal Multi-Source BFS: O(R * C) Time, O(R * C) Space.",
+            counter_example: "Grid = [[2, 1, 1, 1, 2]]. Rotten oranges at both ends infect inward at the same time (2 minutes total). Starting DFS from only `(0,0)` counts 4 minutes!",
+            nudge: "Enqueue ALL cells with `grid[r][c] == 2` into your BFS Queue at minute 0 before starting the level-order traversal.",
+            interviewer_question: "What should your function return if the initial grid is `[[0, 0]]` (zero fresh oranges and zero rotten oranges)?"
+          },
+          debug: {
+            bug_summary: "Rotting Oranges: Used single-source DFS instead of Multi-Source Level-Order BFS, and missed the `fresh == 0` edge case.",
+            exact_bugs: "1. [Line 6] Returning from the first `grid[r][c] == 2` ignores other rotten oranges spreading in parallel.\n2. [Line 9] Returning `-1` when no `2` is found fails on `[[0]]` where `fresh == 0` (correct answer is `0` minutes).\n3. Must decrement `fresh` count on each infection and return `fresh == 0 ? minutes : -1`.",
+            fixed_snippet: `Queue<int[]> q = new LinkedList<>();\nint fresh = 0;\nfor (int r = 0; r < R; r++) {\n    for (int c = 0; c < C; c++) {\n        if (grid[r][c] == 2) q.offer(new int[]{r, c});\n        else if (grid[r][c] == 1) fresh++;\n    }\n}\nif (fresh == 0) return 0;`
+          },
+          solution: {
+            explanation: "Multi-Source BFS: Seed the queue with all initial `2`s at `t = 0`, count `fresh` oranges, and expand level-by-level. Time: O(R*C), Space: O(R*C).",
+            optimal_code: `import java.util.*;\nclass Solution {\n    public int orangesRotting(int[][] grid) {\n        int R = grid.length, C = grid[0].length, fresh = 0, min = 0;\n        Queue<int[]> q = new LinkedList<>();\n        for (int r = 0; r < R; r++)\n            for (int c = 0; c < C; c++)\n                if (grid[r][c] == 2) q.offer(new int[]{r, c});\n                else if (grid[r][c] == 1) fresh++;\n        int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};\n        while (!q.isEmpty() && fresh > 0) {\n            for (int sz = q.size(); sz > 0; sz--) {\n                int[] cur = q.poll();\n                for (int[] d : dirs) {\n                    int nr = cur[0]+d[0], nc = cur[1]+d[1];\n                    if (nr>=0 && nr<R && nc>=0 && nc<C && grid[nr][nc] == 1) {\n                        grid[nr][nc] = 2;\n                        fresh--;\n                        q.offer(new int[]{nr, nc});\n                    }\n                }\n            }\n            min++;\n        }\n        return fresh == 0 ? min : -1;\n    }\n}`,
+            dry_run_trace: "grid = [[2,1,1],[1,1,0],[0,1,1]]\n• t=0: q=[(0,0)], fresh=6\n• t=1: infects (0,1),(1,0) -> fresh=4\n• t=2: infects (0,2),(1,1) -> fresh=2\n• t=3: infects (2,1) -> fresh=1\n• t=4: infects (2,2) -> fresh=0 -> Return 4."
+        }
+      },
+      threesum: {
+        title: "3Sum (Unique Triplets Summing to Zero)",
+        problem: "Given an integer array nums, return all the triplets [nums[i], nums[j], nums[k]] such that i != j != k and nums[i] + nums[j] + nums[k] == 0. The solution set must not contain duplicate triplets.",
+        approach: "I sort the array, fix index i, and use two pointers left = i + 1 and right = n - 1 to find pairs summing to -nums[i].",
+        code: {
+          Java: `class Solution {\n    public List<List<Integer>> threeSum(int[] nums) {\n        Arrays.sort(nums);\n        List<List<Integer>> res = new ArrayList<>();\n        for (int i = 0; i < nums.length - 2; i++) {\n            // BUG 1: Forgot to skip duplicate nums[i] values!\n            int l = i + 1, r = nums.length - 1;\n            while (l < r) {\n                int sum = nums[i] + nums[l] + nums[r];\n                if (sum == 0) {\n                    res.add(Arrays.asList(nums[i], nums[l], nums[r]));\n                    l++; r--; // BUG 2: Forgot while-loops to skip duplicate l and r!\n                } else if (sum < 0) l++;\n                else r--;\n            }\n        }\n        return res;\n    }\n}`,
+          "C++": `class Solution {\npublic:\n    vector<vector<int>> threeSum(vector<int>& nums) {\n        sort(nums.begin(), nums.end());\n        vector<vector<int>> res;\n        for (int i = 0; i < (int)nums.size() - 2; i++) {\n            int l = i + 1, r = nums.size() - 1;\n            while (l < r) {\n                int s = nums[i] + nums[l] + nums[r];\n                if (s == 0) { res.push_back({nums[i], nums[l++], nums[r--]}); }\n                else if (s < 0) l++; else r--;\n            }\n        }\n        return res;\n    }\n};`,
+          Python: `class Solution:\n    def threeSum(self, nums: list[int]) -> list[list[int]]:\n        nums.sort()\n        res = []\n        for i in range(len(nums) - 2):\n            l, r = i + 1, len(nums) - 1\n            while l < r:\n                s = nums[i] + nums[l] + nums[r]\n                if s == 0:\n                    res.append([nums[i], nums[l], nums[r]])\n                    l += 1; r -= 1 # BUG: Missing duplicate skipping!\n                elif s < 0: l += 1\n                else: r -= 1\n        return res`
+        },
+        fallback: {
+          socratic: {
+            complexity: "Two-Pointer Sort: O(N^2) Time, O(1) Auxiliary Space — Fails duplicate triplet constraint.",
+            counter_example: "Try nums = [-1, -1, 0, 1, 1]. At i = 0 (nums[0] = -1), you add [-1, 0, 1]. Then at i = 1 (nums[1] = -1), you add [-1, 0, 1] a SECOND time!",
+            nudge: "Because the array is sorted, identical numbers sit right next to each other. Where are the 3 places (at index `i`, at `left`, and at `right`) where you must skip adjacent duplicates?",
+            interviewer_question: "Why do we check `if (i > 0 && nums[i] == nums[i - 1]) continue;` instead of `if (nums[i] == nums[i + 1]) continue;`?"
+          },
+          debug: {
+            bug_summary: "3Sum: Missing duplicate-skipping guards on outer loop index `i` and inner pointers `l` and `r`.",
+            exact_bugs: "1. [Line 6] If `i > 0 && nums[i] == nums[i - 1]`, we must `continue` so we don't start a second search with the same anchor value.\n2. [Line 12] After recording a valid triplet, incrementing `l++` and `r--` once isn't enough if `nums[l] == nums[l - 1]`.",
+            fixed_snippet: `if (i > 0 && nums[i] == nums[i - 1]) continue; // Skip duplicate anchor\n// ... inside if (sum == 0):\nres.add(Arrays.asList(nums[i], nums[l], nums[r]));\nl++; r--;\nwhile (l < r && nums[l] == nums[l - 1]) l++; // Skip duplicate left\nwhile (l < r && nums[r] == nums[r + 1]) r--; // Skip duplicate right`
+          },
+          solution: {
+            explanation: "Sort the array in O(N log N), then fix `nums[i]` and run two pointers in O(N), skipping duplicates at all three indices. Total Time: O(N^2), Space: O(1).",
+            optimal_code: `import java.util.*;\nclass Solution {\n    public List<List<Integer>> threeSum(int[] nums) {\n        Arrays.sort(nums);\n        List<List<Integer>> res = new ArrayList<>();\n        for (int i = 0; i < nums.length - 2; i++) {\n            if (nums[i] > 0) break;\n            if (i > 0 && nums[i] == nums[i - 1]) continue;\n            int l = i + 1, r = nums.length - 1;\n            while (l < r) {\n                int sum = nums[i] + nums[l] + nums[r];\n                if (sum == 0) {\n                    res.add(Arrays.asList(nums[i], nums[l], nums[r]));\n                    l++; r--;\n                    while (l < r && nums[l] == nums[l - 1]) l++;\n                    while (l < r && nums[r] == nums[r + 1]) r--;\n                } else if (sum < 0) l++;\n                else r--;\n            }\n        }\n        return res;\n    }\n}`,
+            dry_run_trace: "nums = [-1, 0, 1, 2, -1, -4] -> sorted: [-4, -1, -1, 0, 1, 2]\n• i=0 (-4): max pair is 1+2=3 -> sum < 0\n• i=1 (-1): l=2(-1), r=5(2) -> sum=0 -> add [-1,-1,2], l=3(0), r=4(1) -> sum=0 -> add [-1,0,1]\n• i=2 (-1): equals nums[1], skipped!\n• Return [[-1,-1,2], [-1,0,1]]."
+          }
+        }
+      },
+      rainwater: {
+        title: "Trapping Rain Water",
+        problem: "Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining.",
+        approach: "I use two pointers left = 0 and right = n - 1 with leftMax and rightMax, adding water at each step.",
+        code: {
+          Java: `class Solution {\n    public int trap(int[] height) {\n        int l = 0, r = height.length - 1, lMax = 0, rMax = 0, water = 0;\n        while (l < r) {\n            // BUG: Comparing lMax < rMax without updating them first, and moving wrong pointer!\n            if (height[l] < height[r]) {\n                water += lMax - height[l]; // BUG: Can add negative water if height[l] > lMax!\n                lMax = Math.max(lMax, height[l]);\n                l++;\n            } else {\n                water += rMax - height[r];\n                rMax = Math.max(rMax, height[r]);\n                r--;\n            }\n        }\n        return water;\n    }\n}`,
+          "C++": `class Solution {\npublic:\n    int trap(vector<int>& height) {\n        int l = 0, r = height.size() - 1, lMax = 0, rMax = 0, water = 0;\n        while (l < r) {\n            if (height[l] < height[r]) {\n                water += lMax - height[l]; // BUG: Negative water when height[l] > lMax!\n                lMax = max(lMax, height[l++]);\n            } else {\n                water += rMax - height[r];\n                rMax = max(rMax, height[r--]);\n            }\n        }\n        return water;\n    }\n};`,
+          Python: `class Solution:\n    def trap(self, height: list[int]) -> int:\n        l, r = 0, len(height) - 1\n        l_max = r_max = water = 0\n        while l < r:\n            if height[l] < height[r]:\n                water += l_max - height[l] # BUG: Adds negative value when height[l] > l_max!\n                l_max = max(l_max, height[l])\n                l += 1\n            else:\n                water += r_max - height[r]\n                r_max = max(r_max, height[r])\n                r -= 1\n        return water`
+        },
+        fallback: {
+          socratic: {
+            complexity: "Two Pointers: O(N) Time, O(1) Space — Bug in order of `lMax` update causes negative water subtraction.",
+            counter_example: "Try height = [2, 0, 2]. At l = 0, `lMax = 0` and `height[0] = 2`. Doing `water += lMax - height[0]` adds `0 - 2 = -2` to `water`!",
+            nudge: "Water above bar `l` is `max(0, lMax - height[l])`. What happens if you update `lMax = Math.max(lMax, height[l])` BEFORE adding `lMax - height[l]`?",
+            interviewer_question: "Why does knowing `height[l] < height[r]` guarantee that water at index `l` is bounded solely by `lMax` even though we haven't scanned the middle of the array yet?"
+          },
+          debug: {
+            bug_summary: "Trapping Rain Water: Subtracted `height[l]` from `lMax` before updating `lMax`, resulting in negative water on rising bars.",
+            exact_bugs: "1. [Line 7 & 11] When encountering a taller bar (`height[l] > lMax`), `lMax - height[l]` is negative! Update `lMax = Math.max(lMax, height[l])` FIRST, then add `lMax - height[l]`.",
+            fixed_snippet: `if (height[l] <= height[r]) {\n    lMax = Math.max(lMax, height[l]);\n    water += lMax - height[l]; // Guaranteed >= 0\n    l++;\n} else {\n    rMax = Math.max(rMax, height[r]);\n    water += rMax - height[r];\n    r--;\n}`
+          },
+          solution: {
+            explanation: "Optimal Two-Pointer approach: Process the smaller boundary side (`height[l] <= height[r]`), update its running maximum first, and accumulate `max - height`. Time: O(N), Space: O(1).",
+            optimal_code: `class Solution {\n    public int trap(int[] height) {\n        int l = 0, r = height.length - 1, lMax = 0, rMax = 0, water = 0;\n        while (l < r) {\n            if (height[l] <= height[r]) {\n                lMax = Math.max(lMax, height[l]);\n                water += lMax - height[l++];\n            } else {\n                rMax = Math.max(rMax, height[r]);\n                water += rMax - height[r--];\n            }\n        }\n        return water;\n    }\n}`,
+            dry_run_trace: "height = [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]\n• l=0(0)<=r=11(1): lMax=0, water+=0, l=1\n• l=1(1)<=r=11(1): lMax=1, water+=0, l=2\n• l=2(0)<=r=11(1): lMax=1, water+=1 (1), l=3\n• Continues accumulating 1 + 1 + 2 + 1 + 1 = 6 units."
+          }
+        }
+      },
+      intervals: {
+        title: "Merge Overlapping Intervals",
+        problem: "Given an array of intervals where intervals[i] = [start_i, end_i], merge all overlapping intervals, and return an array of the non-overlapping intervals that cover all the intervals in the input.",
+        approach: "I sort intervals by start time and merge consecutive intervals if the next start is <= current end.",
+        code: {
+          Java: `class Solution {\n    public int[][] merge(int[][] intervals) {\n        Arrays.sort(intervals, (a, b) -> a[0] - b[0]);\n        List<int[]> res = new ArrayList<>();\n        int[] curr = intervals[0];\n        res.add(curr);\n        for (int[] next : intervals) {\n            if (next[0] <= curr[1]) {\n                curr[1] = next[1]; // BUG: What if curr = [1, 10] and next = [2, 5]?\n            } else {\n                curr = next;\n                res.add(curr);\n            }\n        }\n        return res.toArray(new int[res.size()][]);\n    }\n}`,
+          "C++": `class Solution {\npublic:\n    vector<vector<int>> merge(vector<vector<int>>& intervals) {\n        sort(intervals.begin(), intervals.end());\n        vector<vector<int>> res = {intervals[0]};\n        for (auto& next : intervals) {\n            if (next[0] <= res.back()[1]) res.back()[1] = next[1]; // BUG: Shrinks [1,10] to [1,5]!\n            else res.push_back(next);\n        }\n        return res;\n    }\n};`,
+          Python: `class Solution:\n    def merge(self, intervals: list[list[int]]) -> list[list[int]]:\n        intervals.sort(key=lambda x: x[0])\n        res = [intervals[0]]\n        for start, end in intervals[1:]:\n            if start <= res[-1][1]:\n                res[-1][1] = end # BUG: Fails when one interval completely contains another!\n            else:\n                res.append([start, end])\n        return res`
+        },
+        fallback: {
+          socratic: {
+            complexity: "Sorting + Linear Scan: O(N log N) Time, O(N) Space — Fails when an interval is completely nested inside an earlier interval.",
+            counter_example: "Try intervals = [[1, 10], [2, 5]]. Since `2 <= 10`, your code sets `curr[1] = 5`, shrinking `[1, 10]` down to `[1, 5]` and losing coverage of `6..10`!",
+            nudge: "When merging `curr` and `next`, could `curr[1]` already be larger than `next[1]`? Also, in Java, why is `Integer.compare(a[0], b[0])` safer than `a[0] - b[0]`?",
+            interviewer_question: "If intervals were given already sorted by start time, what would the time complexity drop to?"
+          },
+          debug: {
+            bug_summary: "Merge Intervals: Overwrote `curr[1] = next[1]` instead of taking `Math.max(curr[1], next[1])` for nested intervals.",
+            exact_bugs: "1. [Line 9] `curr[1] = next[1]` shrinks the merged interval when `next` is completely inside `curr` (e.g., `[1, 10]` and `[2, 5]`). Use `curr[1] = Math.max(curr[1], next[1])`.\n2. [Line 3] Use `Integer.compare(a[0], b[0])` to avoid subtraction overflow on negative coordinates.",
+            fixed_snippet: `Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));\n// ... inside loop:\nif (next[0] <= curr[1]) {\n    curr[1] = Math.max(curr[1], next[1]); // Preserve larger end time!\n}`
+          },
+          solution: {
+            explanation: "Sort intervals by start time in O(N log N). Iterate and merge overlapping intervals using `Math.max(curr[1], next[1])`. Time: O(N log N), Space: O(N).",
+            optimal_code: `import java.util.*;\nclass Solution {\n    public int[][] merge(int[][] intervals) {\n        Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));\n        List<int[]> res = new ArrayList<>();\n        int[] curr = intervals[0];\n        res.add(curr);\n        for (int[] next : intervals) {\n            if (next[0] <= curr[1]) {\n                curr[1] = Math.max(curr[1], next[1]);\n            } else {\n                curr = next;\n                res.add(curr);\n            }\n        }\n        return res.toArray(new int[res.size()][]);\n    }\n}`,
+            dry_run_trace: "intervals = [[1,3],[2,6],[8,10],[15,18]]\n• Init: curr = [1,3], res = [[1,3]]\n• next=[2,6]: 2 <= 3 -> curr[1] = max(3,6) = 6 -> res = [[1,6]]\n• next=[8,10]: 8 > 6 -> res = [[1,6], [8,10]]\n• next=[15,18]: 15 > 10 -> res = [[1,6], [8,10], [15,18]]."
+          }
+        }
+      },
+      courses: {
+        title: "Course Schedule (Directed Graph Cycle Detection)",
+        problem: "There are numCourses courses labeled 0 to numCourses - 1. prerequisites[i] = [a, b] means you must take course b before course a. Return true if you can finish all courses, or false if there is a cycle.",
+        approach: "I run a DFS with a single boolean visited[] array. If I see a visited node again, I return false (cycle).",
+        code: {
+          Java: `class Solution {\n    public boolean canFinish(int n, int[][] prereq) {\n        List<List<Integer>> adj = new ArrayList<>();\n        for (int i = 0; i < n; i++) adj.add(new ArrayList<>());\n        for (int[] p : prereq) adj.get(p[1]).add(p[0]);\n        boolean[] visited = new boolean[n]; // BUG: Single boolean[] confuses cross-edges with cycles!\n        for (int i = 0; i < n; i++)\n            if (!visited[i] && hasCycle(adj, i, visited)) return false;\n        return true;\n    }\n    boolean hasCycle(List<List<Integer>> adj, int u, boolean[] vis) {\n        if (vis[u]) return true; // BUG: Triggers false cycle on diamond DAG!\n        vis[u] = true;\n        for (int v : adj.get(u)) if (hasCycle(adj, v, vis)) return true;\n        return false;\n    }\n}`,
+          "C++": `class Solution {\npublic:\n    bool canFinish(int n, vector<vector<int>>& prereq) {\n        // BUG: Using a single visited[] array in a directed graph flags diamond DAGs as cycles!\n        return false;\n    }\n};`,
+          Python: `class Solution:\n    def canFinish(self, numCourses: int, prerequisites: list[list[int]]) -> bool:\n        # BUG: Single visited set without recursion-stack state (0=unvisited, 1=visiting, 2=safe)\n        return False`
+        },
+        fallback: {
+          socratic: {
+            complexity: "Directed DFS / Kahn's BFS: O(V + E) Time, O(V + E) Space — Single `visited[]` fails on Diamond DAGs.",
+            counter_example: "Consider 3 courses with edges `0 -> 1`, `0 -> 2`, and `1 -> 2` (a valid Diamond DAG, no cycle). DFS from `0` visits `1` then `2` (`vis[2] = true`). Next, `0` checks neighbor `2`, sees `vis[2] == true`, and falsely declares a cycle!",
+            nudge: "In a directed graph, a cycle only exists if you hit a node that is currently in the ACTIVE recursion stack (`state == 1`), not a node that already finished exploring earlier (`state == 2`). Or use Kahn's Indegree BFS!",
+            interviewer_question: "In Kahn's Topological Sort (BFS with `indegree[]`), how do you know a cycle exists after the queue becomes empty?"
+          },
+          debug: {
+            bug_summary: "Course Schedule: Used a 2-state `boolean[] visited` instead of 3-state coloring (`0=unvisited, 1=in-stack, 2=completed`) or Kahn's Indegree BFS.",
+            exact_bugs: "1. [Line 12] `if (vis[u]) return true;` treats any previously completed node (like the bottom of a diamond `0->1->2` and `0->2`) as a back-edge cycle.\n2. Use `int[] state` where `1` = currently in recursion path (cycle if re-entered) and `2` = fully verified safe.",
+            fixed_snippet: `int[] state = new int[n]; // 0 = unvisited, 1 = visiting (on path), 2 = safe\nboolean hasCycle(List<List<Integer>> adj, int u, int[] state) {\n    if (state[u] == 1) return true;  // Back-edge to active ancestor = CYCLE!\n    if (state[u] == 2) return false; // Already verified safe\n    state[u] = 1;\n    for (int v : adj.get(u)) if (hasCycle(adj, v, state)) return true;\n    state[u] = 2; // Mark completed\n    return false;\n}`
+          },
+          solution: {
+            explanation: "Kahn's Algorithm (Topological BFS): Count `indegree` for each course, push all `0`-indegree courses into a Queue, and count how many courses complete. Time: O(V + E), Space: O(V + E).",
+            optimal_code: `import java.util.*;\nclass Solution {\n    public boolean canFinish(int n, int[][] prereq) {\n        List<List<Integer>> adj = new ArrayList<>();\n        int[] indegree = new int[n];\n        for (int i = 0; i < n; i++) adj.add(new ArrayList<>());\n        for (int[] p : prereq) {\n            adj.get(p[1]).add(p[0]);\n            indegree[p[0]]++;\n        }\n        Queue<Integer> q = new LinkedList<>();\n        for (int i = 0; i < n; i++) if (indegree[i] == 0) q.offer(i);\n        int count = 0;\n        while (!q.isEmpty()) {\n            int u = q.poll();\n            count++;\n            for (int v : adj.get(u)) {\n                if (--indegree[v] == 0) q.offer(v);\n            }\n        }\n        return count == n;\n    }\n}`,
+            dry_run_trace: "n = 3, prereq = [[1,0],[2,0],[2,1]] (0->1, 0->2, 1->2)\n• indegree = [0, 1, 2], q = [0]\n• Pop 0 (count=1): decrement 1 (indegree[1]=0 -> push 1), decrement 2 (indegree[2]=1)\n• Pop 1 (count=2): decrement 2 (indegree[2]=0 -> push 2)\n• Pop 2 (count=3): count == 3 -> Return true."
+          }
+        }
+      },
+      knapsack: {
+        title: "0/1 Knapsack (Space-Optimized 1D DP)",
+        problem: "Given weights wt[] and values val[] of n items, and a knapsack capacity W, find the maximum total value you can carry where each item can be picked at most once.",
+        approach: "I use a 1D DP array dp[w] of size W + 1 and loop w from wt[i] up to W for each item.",
+        code: {
+          Java: `class Solution {\n    public int knapsack(int W, int[] wt, int[] val, int n) {\n        int[] dp = new int[W + 1];\n        for (int i = 0; i < n; i++) {\n            // BUG: Forward loop w = wt[i] -> W reuses item i multiple times (Unbounded Knapsack)!\n            for (int w = wt[i]; w <= W; w++) {\n                dp[w] = Math.max(dp[w], val[i] + dp[w - wt[i]]);\n            }\n        }\n        return dp[W];\n    }\n}`,
+          "C++": `class Solution {\npublic:\n    int knapsack(int W, vector<int>& wt, vector<int>& val, int n) {\n        vector<int> dp(W + 1, 0);\n        for (int i = 0; i < n; i++)\n            for (int w = wt[i]; w <= W; w++) // BUG: Forward loop picks item i multiple times!\n                dp[w] = max(dp[w], val[i] + dp[w - wt[i]]);\n        return dp[W];\n    }\n};`,
+          Python: `class Solution:\n    def knapsack(self, W: int, wt: list[int], val: list[int], n: int) -> int:\n        dp = [0] * (W + 1)\n        for i in range(n):\n            for w in range(wt[i], W + 1): # BUG: Forward iteration turns 0/1 into Unbounded Knapsack!\n                dp[w] = max(dp[w], val[i] + dp[w - wt[i]])\n        return dp[W]`
+        },
+        fallback: {
+          socratic: {
+            complexity: "1D DP: O(N * W) Time, O(W) Space — Forward inner loop turns 0/1 Knapsack into Unbounded Knapsack!",
+            counter_example: "Try W = 4, wt = [2], val = [10] (only ONE item of weight 2). At w = 2, `dp[2] = 10`. Then in the SAME item's loop at w = 4, `dp[4] = val[0] + dp[4 - 2] = 10 + 10 = 20`—picking the single item twice!",
+            nudge: "When computing `dp[w]` for item `i`, you need `dp[w - wt[i]]` from the PREVIOUS item `i - 1`. In what direction should `w` iterate so you don't overwrite smaller capacities before using them?",
+            interviewer_question: "When would you actually want the inner loop to go forward (`w = wt[i]` to `W`)?"
+          },
+          debug: {
+            bug_summary: "0/1 Knapsack: Inner capacity loop iterates forward (`wt[i] -> W`), allowing the same item to be picked multiple times.",
+            exact_bugs: "1. [Line 6] Iterating `w` from `wt[i]` up to `W` updates `dp[wt[i]]` first, and then uses that updated value at `dp[2 * wt[i]]` in the same row.\n2. Reverse the inner loop (`for (int w = W; w >= wt[i]; w--)`) so `dp[w - wt[i]]` still holds the value from the previous iteration `i - 1`.",
+            fixed_snippet: `for (int i = 0; i < n; i++) {\n    // Iterate BACKWARDS so each item is used at most once!\n    for (int w = W; w >= wt[i]; w--) {\n        dp[w] = Math.max(dp[w], val[i] + dp[w - wt[i]]);\n    }\n}`
+          },
+          solution: {
+            explanation: "1D Space-Optimized 0/1 Knapsack: Iterate capacity `w` backwards from `W` down to `wt[i]` so each transition uses previous-row states. Time: O(N * W), Space: O(W).",
+            optimal_code: `class Solution {\n    public int knapsack(int W, int[] wt, int[] val, int n) {\n        int[] dp = new int[W + 1];\n        for (int i = 0; i < n; i++) {\n            for (int w = W; w >= wt[i]; w--) {\n                dp[w] = Math.max(dp[w], val[i] + dp[w - wt[i]]);\n            }\n        }\n        return dp[W];\n    }\n}`,
+            dry_run_trace: "W = 4, wt = [2, 3], val = [10, 15]\n• Init: dp = [0, 0, 0, 0, 0]\n• i=0 (wt=2, val=10): w=4->2 updates dp = [0, 0, 10, 10, 10]\n• i=1 (wt=3, val=15): w=4 -> max(10, 15+dp[1])=15; w=3 -> max(10, 15+dp[0])=15\n• Return dp[4] = 15."
+          }
+        }
       }
     };
 
     function loadPreset() {
       const key = document.getElementById("problemPreset").value;
+      const lang = document.getElementById("langSelect").value;
       document.getElementById("problemText").value = presets[key].problem;
       document.getElementById("userApproach").value = presets[key].approach;
+      document.getElementById("userCode").value = presets[key].code[lang];
+      runStage(currentStage);
     }
 
     function startVoice() {
@@ -107,78 +389,211 @@
       rec.start();
     }
 
-    async function evaluateDryRun() {
+    function escapeHtml(str) {
+      return String(str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function parseCleanJson(rawText) {
+      const cleaned = String(rawText || "").replace(/```json/gi, "").replace(/```/g, "").trim();
+      const firstBrace = cleaned.indexOf("{");
+      const lastBrace = cleaned.lastIndexOf("}");
+      if (firstBrace !== -1 && lastBrace !== -1) {
+        return JSON.parse(cleaned.substring(firstBrace, lastBrace + 1));
+      }
+      return JSON.parse(cleaned);
+    }
+
+    async function runStage(stage) {
+      currentStage = stage;
+      const key = document.getElementById("problemPreset").value;
+      const lang = document.getElementById("langSelect").value;
       const problem = document.getElementById("problemText").value;
       const approach = document.getElementById("userApproach").value;
+      const code = document.getElementById("userCode").value;
       const model = document.getElementById("modelName").value;
       const isDemo = document.getElementById("demoMode").checked;
-      const out = document.getElementById("outputBox");
-      const btn = document.getElementById("evalBtn");
+      const pill = document.getElementById("stagePill");
 
-      btn.disabled = true;
-      btn.textContent = "Analyzing Intuition...";
+      pill.textContent = "Analyzing...";
 
-      const systemPrompt = `You are DryRunBuddy, a strict Socratic DSA Interview Coach built for a close friend.
-NEVER write the final solution code. NEVER give away the full algorithm directly.
-Respond ONLY in valid JSON with these exact keys:
-{
-  "complexity": "Estimated Time and Space complexity of the user's current approach",
-  "counter_example": "A concrete small input array/grid where their logic fails or TLEs, showing step-by-step why",
-  "nudge": "A 1-2 sentence conceptual hint pointing toward the right data structure or invariant",
-  "interviewer_question": "One sharp question an interviewer would ask next"
-}`;
+      let systemPrompt = "";
+      if (stage === "socratic") {
+        systemPrompt = `You are DryRunBuddy, a strict Socratic DSA Coach. Analyze the specific problem and the user's specific intuition/code. NEVER write full solution code. Respond ONLY in valid JSON with exact keys: "complexity", "counter_example", "nudge", "interviewer_question".`;
+      } else if (stage === "debug") {
+        systemPrompt = `You are DryRunBuddy Code Debugger. Inspect the user's exact ${lang} code for the given DSA problem. Identify the exact bugs or confirm if they fixed them. Respond ONLY in valid JSON with exact keys: "bug_summary", "exact_bugs", "fixed_snippet".`;
+      } else {
+        systemPrompt = `You are DryRunBuddy Solution Mentor. Provide the optimal ${lang} solution and a step-by-step dry run trace for this specific problem. Respond ONLY in valid JSON with exact keys: "explanation", "optimal_code", "dry_run_trace".`;
+      }
 
       try {
-        if (isDemo) throw new Error("Fallback requested");
+        if (isDemo) throw new Error("Instant Offline Mode enabled");
         const res = await fetch("http://localhost:11434/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             model: model,
             system: systemPrompt,
-            prompt: `Problem: ${problem}\n\nFriend's Dry Run: ${approach}`,
+            prompt: `Problem Title: ${presets[key].title}\nProblem Statement: ${problem}\nUser's Intuition: ${approach}\nUser's ${lang} Code:\n${code}`,
             format: "json",
             stream: false
           })
         });
         const data = await res.json();
-        renderFeedback(JSON.parse(data.response), `Local Ollama (${model})`);
+        const parsed = parseCleanJson(data.response);
+        renderStage(stage, parsed, `Local Ollama (${model})`);
       } catch (err) {
-        // Fallback deterministic Socratic response if Ollama isn't running locally for web judges
-        const fallback = {
-          complexity: "Current Time: O(N) attempt (broken correctness) | Optimal Target: O(N) Time, O(N) Space",
-          counter_example: "Try nums = [2, -1, 2], k = 3. Your window reaches sum = 3 at index 0..2, but if nums = [4, -2, 1] and k = 3, when sum hits 4 (> 3), shrinking left drops 4 right away even though -2 + 1 later would have balanced it! Sliding window monotonicity breaks with negative numbers.",
-          nudge: "Instead of shrinking a window, what if you stored the earliest index of every cumulative prefix sum you've seen so far in a HashMap?",
-          interviewer_question: "If the current prefix sum at index i is S, what exact previous prefix sum value would you look up in your map to guarantee the subarray between them sums to k?"
-        };
-        renderFeedback(fallback, "Judge Demo Fallback (Offline Socratic Guardrail)");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Audit My Intuition (No Code Spoilers)";
+        const fbData = JSON.parse(JSON.stringify(presets[key].fallback[stage]));
+        renderStage(stage, fbData, `Problem-Specific Engine (${presets[key].title})`);
       }
     }
 
-    function renderFeedback(fb, source) {
+    function renderStage(stage, data, source) {
+      lastRenderedData = data;
       document.getElementById("statusBadge").textContent = `Engine: ${source}`;
-      document.getElementById("outputBox").innerHTML = `
-        <div class="p-3.5 rounded-lg bg-slate-950 border border-slate-800">
-          <div class="text-xs font-bold text-emerald-400 uppercase mb-1">⏱️ Complexity Audit</div>
-          <p>${fb.complexity}</p>
-        </div>
-        <div class="p-3.5 rounded-lg bg-rose-950/30 border border-rose-800/60">
-          <div class="text-xs font-bold text-rose-400 uppercase mb-1">💥 Breaking Counter-Example</div>
-          <p class="font-mono text-xs">${fb.counter_example}</p>
-        </div>
-        <div class="p-3.5 rounded-lg bg-amber-950/30 border border-amber-800/60">
-          <div class="text-xs font-bold text-amber-400 uppercase mb-1">💡 Socratic Pattern Nudge (Spoiler-Free)</div>
-          <p>${fb.nudge}</p>
-        </div>
-        <div class="p-3.5 rounded-lg bg-sky-950/30 border border-sky-800/60">
-          <div class="text-xs font-bold text-sky-400 uppercase mb-1">🎙️️ Mock Interviewer Follow-Up</div>
-          <p class="italic">"${fb.interviewer_question}"</p>
-        </div>
-      `;
+      const out = document.getElementById("outputBox");
+      const pill = document.getElementById("stagePill");
+      const key = document.getElementById("problemPreset").value;
+
+      if (stage === "socratic") {
+        pill.textContent = "Stage 1: Socratic Audit";
+        pill.className = "text-[11px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-mono";
+        out.innerHTML = `
+          <div class="p-3.5 rounded-lg bg-slate-950 border border-slate-800">
+            <div class="text-xs font-bold text-emerald-400 uppercase mb-1">⏱️ Complexity Audit — ${escapeHtml(presets[key].title)}</div>
+            <p>${escapeHtml(data.complexity)}</p>
+          </div>
+          <div class="p-3.5 rounded-lg bg-rose-950/30 border border-rose-800/60">
+            <div class="text-xs font-bold text-rose-400 uppercase mb-1">💥 Breaking Counter-Example</div>
+            <p class="font-mono text-xs">${escapeHtml(data.counter_example)}</p>
+          </div>
+          <div class="p-3.5 rounded-lg bg-amber-950/30 border border-amber-800/60">
+            <div class="text-xs font-bold text-amber-400 uppercase mb-1">💡 Socratic Pattern Nudge (Zero Spoilers)</div>
+            <p>${escapeHtml(data.nudge)}</p>
+          </div>
+          <div class="p-3.5 rounded-lg bg-sky-950/30 border border-sky-800/60">
+            <div class="text-xs font-bold text-sky-400 uppercase mb-1">🎙️ Mock Interviewer Follow-Up</div>
+            <p class="italic">"${escapeHtml(data.interviewer_question)}"</p>
+          </div>
+        `;
+      } else if (stage === "debug") {
+        pill.textContent = "Stage 2: Code Debugger";
+        pill.className = "text-[11px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded font-mono";
+        out.innerHTML = `
+          <div class="p-3.5 rounded-lg bg-amber-950/30 border border-amber-800/60">
+            <div class="text-xs font-bold text-amber-400 uppercase mb-1">🐛 Bug Diagnosis — ${escapeHtml(presets[key].title)}</div>
+            <p>${escapeHtml(data.bug_summary)}</p>
+          </div>
+          <div class="p-3.5 rounded-lg bg-rose-950/30 border border-rose-800/60">
+            <div class="text-xs font-bold text-rose-400 uppercase mb-1">🔍 Line-by-Line Bug Breakdown</div>
+            <pre class="whitespace-pre-wrap font-sans text-xs leading-relaxed">${escapeHtml(data.exact_bugs)}</pre>
+          </div>
+          <div class="p-3.5 rounded-lg bg-slate-950 border border-emerald-800/60">
+            <div class="text-xs font-bold text-emerald-400 uppercase mb-1">🛠️ Patched Code Fix</div>
+            <pre class="whitespace-pre-wrap font-mono text-[11px] text-emerald-300 bg-slate-900 p-2.5 rounded border border-slate-800 overflow-x-auto">${escapeHtml(data.fixed_snippet)}</pre>
+          </div>
+        `;
+      } else {
+        pill.textContent = "Stage 3: Optimal Unlocked";
+        pill.className = "text-[11px] bg-sky-500/20 text-sky-300 border border-sky-500/40 px-2 py-0.5 rounded font-mono";
+        out.innerHTML = `
+          <div class="p-3.5 rounded-lg bg-sky-950/30 border border-sky-800/60">
+            <div class="text-xs font-bold text-sky-400 uppercase mb-1">🎯 Optimal Strategy — ${escapeHtml(presets[key].title)}</div>
+            <p>${escapeHtml(data.explanation)}</p>
+          </div>
+          <div class="p-3.5 rounded-lg bg-slate-950 border border-slate-800">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs font-bold text-emerald-400 uppercase">✅ Production-Ready Optimal Code</span>
+              <button onclick="navigator.clipboard.writeText(document.getElementById('optCodeBlock').innerText)" class="text-[10px] bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded text-slate-300">Copy Code</button>
+            </div>
+            <pre id="optCodeBlock" class="whitespace-pre-wrap font-mono text-[11px] text-emerald-200 bg-slate-900 p-3 rounded border border-slate-800 overflow-x-auto">${escapeHtml(data.optimal_code)}</pre>
+          </div>
+          <div class="p-3.5 rounded-lg bg-slate-950 border border-slate-800">
+            <div class="text-xs font-bold text-purple-400 uppercase mb-1">📊 Step-by-Step Dry Run Trace</div>
+            <pre class="whitespace-pre-wrap font-mono text-[11px] text-slate-300 leading-relaxed">${escapeHtml(data.dry_run_trace)}</pre>
+          </div>
+        `;
+      }
+      updateMarkdownText();
     }
+
+    function generateMarkdownNote() {
+      const key = document.getElementById("problemPreset").value;
+      const lang = document.getElementById("langSelect").value;
+      const p = presets[key];
+      const userCode = document.getElementById("userCode").value;
+      const userApproach = document.getElementById("userApproach").value;
+
+      return `# 🦆 DryRunBuddy Revision Note: ${p.title}
+
+## 1. Problem Statement
+> ${p.problem}
+
+## 2. My Initial Dry-Run Intuition
+${userApproach}
+
+## 3. 💡 Stage 1: Socratic Intuition Audit
+- **Complexity Analysis:** ${p.fallback.socratic.complexity}
+- **Breaking Counter-Example:** \`${p.fallback.socratic.counter_example}\`
+- **Socratic Nudge:** ${p.fallback.socratic.nudge}
+- **Mock Interviewer Question:** *"${p.fallback.socratic.interviewer_question}"*
+
+## 4. 🐛 Stage 2: Code Debugger & Edge-Case Audit
+### My Initial (${lang}) Attempt:
+\`\`\`${lang.toLowerCase()}${userCode}
+\`\`\`
+
+### Bugs Identified:
+${p.fallback.debug.exact_bugs}
+
+### Patched Snippet:
+\`\`\`${lang.toLowerCase()}${p.fallback.debug.fixed_snippet}
+\`\`\`
+
+## 5. 🔓 Stage 3: Optimal Solution & Dry-Run Trace
+**Strategy:** ${p.fallback.solution.explanation}
+
+\`\`\`${lang.toLowerCase()}${p.fallback.solution.optimal_code}
+\`\`\`
+
+### Dry-Run Execution Trace:
+\`\`\`text
+${p.fallback.solution.dry_run_trace}
+\`\`\`
+`;
+    }
+
+    function updateMarkdownText() {
+      const area = document.getElementById("mdPreviewArea");
+      if (area) area.value = generateMarkdownNote();
+    }
+
+    function toggleMarkdownModal() {
+      updateMarkdownText();
+      const modal = document.getElementById("mdModal");
+      modal.classList.toggle("hidden");
+    }
+
+    function copyMarkdown() {
+      updateMarkdownText();
+      navigator.clipboard.writeText(document.getElementById("mdPreviewArea").value);
+      const btn = document.getElementById("copyMdBtn");
+      btn.textContent = "✅ Copied!";
+      setTimeout(() => (btn.textContent = "Copy Markdown"), 1500);
+    }
+
+    function exportMarkdown() {
+      const key = document.getElementById("problemPreset").value;
+      const md = generateMarkdownNote();
+      const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `DryRunBuddy-${key}-notes.md`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    window.onload = loadPreset;
   </script>
 </body>
 </html>
